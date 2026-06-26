@@ -19,6 +19,20 @@ const baseSummary = {
 };
 
 describe('ReportOverview', () => {
+  it('uses semantic gain and loss color tokens for price changes', () => {
+    const { rerender } = render(
+      <ReportOverview meta={{ ...baseMeta, currentPrice: 174.31, changePct: 3.09 }} summary={baseSummary} />
+    );
+
+    expect(screen.getByText('+3.09%')).toHaveStyle({ color: 'var(--home-price-up)' });
+
+    rerender(
+      <ReportOverview meta={{ ...baseMeta, currentPrice: 174.31, changePct: -3.09 }} summary={baseSummary} />
+    );
+
+    expect(screen.getByText('-3.09%')).toHaveStyle({ color: 'var(--home-price-down)' });
+  });
+
   it('renders final market phase and partial-bar labels from report metadata', () => {
     render(
       <ReportOverview

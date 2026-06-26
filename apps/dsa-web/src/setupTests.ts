@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { beforeEach } from 'vitest';
+import { UI_LANGUAGE_STORAGE_KEY } from './utils/uiLanguage';
 
 class MemoryStorageMock implements Storage {
   private readonly values = new Map<string, string>();
@@ -63,3 +65,14 @@ if (!hasLocalStorage) {
     value: new MemoryStorageMock(),
   });
 }
+
+// Reset the persisted UI language before each test so language-dependent
+// assertions stay deterministic. Tests that need a specific language set it
+// explicitly in their own beforeEach / test body.
+beforeEach(() => {
+  try {
+    globalThis.localStorage.removeItem(UI_LANGUAGE_STORAGE_KEY);
+  } catch {
+    // ignore storage failures
+  }
+});

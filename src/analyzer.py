@@ -361,7 +361,7 @@ def apply_placeholder_fill(result: "AnalysisResult", missing_fields: List[str]) 
             return not value.strip()
         return False
 
-    report_language = normalize_report_language(getattr(result, "report_language", "zh"))
+    report_language = normalize_report_language(getattr(result, "report_language", "en"))
     placeholder = get_placeholder_text(report_language)
     phase_decision_placeholders = {
         "dashboard.phase_decision.action_window": (
@@ -863,7 +863,7 @@ def normalize_chip_structure_availability(result: "AnalysisResult", chip_data: A
     """Fill valid chip metrics or collapse placeholder-only chip fields to one fallback line."""
     if not result:
         return
-    language = getattr(result, "report_language", "zh")
+    language = getattr(result, "report_language", "en")
     if _has_meaningful_chip_data(chip_data):
         fill_chip_structure_if_needed(result, chip_data)
         return
@@ -884,7 +884,7 @@ def fill_chip_structure_if_needed(result: "AnalysisResult", chip_data: Any) -> N
         cs = dp.get("chip_structure") or {}
         filled = _build_chip_structure_from_data(
             chip_data,
-            language=getattr(result, "report_language", "zh"),
+            language=getattr(result, "report_language", "en"),
         )
         # Start from a copy of cs to preserve any extra keys the LLM may have added
         merged = dict(cs)
@@ -969,7 +969,7 @@ def stabilize_decision_with_structure(
         return
 
     try:
-        language = normalize_report_language(getattr(result, "report_language", "zh"))
+        language = normalize_report_language(getattr(result, "report_language", "en"))
         dashboard = result.dashboard if isinstance(result.dashboard, dict) else {}
         data_perspective = dashboard.get("data_perspective") if isinstance(dashboard, dict) else {}
         if not isinstance(data_perspective, dict):
@@ -1576,7 +1576,7 @@ class AnalysisResult:
     operation_advice: str  # 操作建议：买入/加仓/持有/减仓/卖出/观望
     decision_type: str = "hold"  # 决策类型：buy/hold/sell（用于统计）
     confidence_level: str = "中"  # 置信度：高/中/低
-    report_language: str = "zh"  # 报告输出语言：zh/en
+    report_language: str = "en"  # 报告输出语言：zh/en
     action: Optional[str] = None  # 建议动作 taxonomy：buy/add/hold/reduce/sell/watch/avoid/alert
     action_label: Optional[str] = None  # 本地化建议动作标签
 
@@ -1743,7 +1743,7 @@ def populate_decision_action_fields(
         operation_advice=getattr(result, "operation_advice", None),
         explicit_action=action_source,
         report_type=report_type,
-        report_language=getattr(result, "report_language", "zh"),
+        report_language=getattr(result, "report_language", "en"),
     )
     result.action = fields["action"]
     result.action_label = fields["action_label"]
@@ -3031,7 +3031,7 @@ class GeminiAnalyzer:
 
         code = context.get('code', 'Unknown')
         config = self._get_runtime_config()
-        report_language = normalize_report_language(getattr(config, "report_language", "zh"))
+        report_language = normalize_report_language(getattr(config, "report_language", "en"))
         system_prompt = self._get_analysis_system_prompt(report_language, stock_code=code)
         skill_instructions, default_skill_policy, use_legacy_default_prompt = self._get_skill_prompt_sections()
         
@@ -3291,7 +3291,7 @@ class GeminiAnalyzer:
         context: Dict[str, Any], 
         name: str,
         news_context: Optional[str] = None,
-        report_language: str = "zh",
+        report_language: str = "en",
         analysis_context_pack_summary: Optional[str] = None,
     ) -> str:
         """
@@ -3835,7 +3835,7 @@ class GeminiAnalyzer:
         """Delegate to module-level check_content_integrity."""
         return check_content_integrity(result, require_phase_decision=require_phase_decision)
 
-    def _build_integrity_complement_prompt(self, missing_fields: List[str], report_language: str = "zh") -> str:
+    def _build_integrity_complement_prompt(self, missing_fields: List[str], report_language: str = "en") -> str:
         """Build complement instruction for missing mandatory fields."""
         report_language = normalize_report_language(report_language)
         if report_language == "en":
@@ -3904,7 +3904,7 @@ class GeminiAnalyzer:
         base_prompt: str,
         previous_response: str,
         missing_fields: List[str],
-        report_language: str = "zh",
+        report_language: str = "en",
     ) -> str:
         """Build retry prompt using the previous response as the complement baseline."""
         complement = self._build_integrity_complement_prompt(missing_fields, report_language=report_language)
@@ -4069,7 +4069,7 @@ class GeminiAnalyzer:
         """
         try:
             report_language = normalize_report_language(
-                getattr(self._get_runtime_config(), "report_language", "zh")
+                getattr(self._get_runtime_config(), "report_language", "en")
             )
             try:
                 _json_str, data = self._extract_analysis_json_object(response_text)
@@ -4213,7 +4213,7 @@ class GeminiAnalyzer:
     ) -> AnalysisResult:
         """从纯文本响应中尽可能提取分析信息"""
         report_language = normalize_report_language(
-            getattr(self._get_runtime_config(), "report_language", "zh")
+            getattr(self._get_runtime_config(), "report_language", "en")
         )
         # 尝试识别关键词来判断情绪
         sentiment_score = 50

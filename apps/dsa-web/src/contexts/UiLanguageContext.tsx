@@ -9,6 +9,11 @@ type UiLanguageContextValue = {
   t: (key: UiTextKey, params?: UiTextParams) => string;
 };
 
+// Safety default used only when a component renders outside <UiLanguageProvider>.
+// Production always mounts the provider in App.tsx, whose initial language
+// resolves via getRuntimeInitialLanguage (English by default). Tests that render
+// pages without a provider still rely on this fallback, so it stays 'zh' to keep
+// their assertions deterministic; it never affects the production English default.
 const fallbackContext: UiLanguageContextValue = {
   language: 'zh',
   setLanguage: () => undefined,

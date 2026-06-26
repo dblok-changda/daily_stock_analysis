@@ -11,10 +11,16 @@ from src.report_language import (
     infer_decision_type_from_advice,
     localize_trend_prediction,
     localize_bias_status,
+    normalize_report_language,
 )
 
 
 class ReportLanguageTestCase(unittest.TestCase):
+    def test_normalize_report_language_defaults_to_english(self) -> None:
+        self.assertEqual(normalize_report_language(None), "en")
+        self.assertEqual(normalize_report_language(""), "en")
+        self.assertEqual(normalize_report_language("unsupported"), "en")
+
     def test_get_signal_level_handles_compound_sell_advice(self) -> None:
         signal_text, emoji, signal_tag = get_signal_level("卖出/观望", 60, "zh")
 

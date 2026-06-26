@@ -106,6 +106,7 @@ function createDeferred<T>() {
 describe('StockScreeningPage', () => {
   beforeEach(() => {
     enableAlphaSift.mockReset();
+    window.localStorage.setItem('dsa.uiLanguage', 'zh');
     getAlphaSiftStatus.mockReset();
     getHotspotDetail.mockReset();
     getHotspots.mockReset();

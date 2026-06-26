@@ -154,12 +154,12 @@ class MarketAnalyzer:
 
     def _get_review_language(self) -> str:
         return normalize_report_language(
-            getattr(getattr(self, "config", None), "report_language", "zh")
+            getattr(getattr(self, "config", None), "report_language", "en")
         )
 
     def _get_template_review_language(self) -> str:
         return normalize_report_language(
-            getattr(getattr(self, "config", None), "report_language", "zh")
+            getattr(getattr(self, "config", None), "report_language", "en")
         )
 
     def _get_market_scope_name(self, review_language: str | None = None) -> str:

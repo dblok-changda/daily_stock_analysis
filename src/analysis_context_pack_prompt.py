@@ -100,11 +100,11 @@ SENSITIVE_MARKERS = (
 )
 
 
-def normalize_analysis_context_pack_language(report_language: str = "zh") -> str:
-    return "en" if str(report_language or "").lower() == "en" else "zh"
+def normalize_analysis_context_pack_language(report_language: str = "en") -> str:
+    return "en" if str(report_language or "en").lower() == "en" else "zh"
 
 
-def get_analysis_context_pack_block_labels(report_language: str = "zh") -> Dict[str, str]:
+def get_analysis_context_pack_block_labels(report_language: str = "en") -> Dict[str, str]:
     return (
         BLOCK_LABELS_EN
         if normalize_analysis_context_pack_language(report_language) == "en"
@@ -121,7 +121,7 @@ def iter_analysis_context_pack_block_keys(blocks: Mapping[str, Any]) -> List[str
 def format_analysis_context_pack_prompt_section(
     pack: Any,
     *,
-    report_language: str = "zh",
+    report_language: str = "en",
 ) -> str:
     """Return a low-sensitivity prompt summary for an AnalysisContextPack.
 

@@ -189,6 +189,23 @@ def test_agent_system_prompts_require_phase_decision_contract() -> None:
 class TestAgentExecutor(unittest.TestCase):
     """Test the ReAct loop logic."""
 
+    def test_run_defaults_missing_report_language_to_english(self):
+        registry = _make_registry_with_echo()
+        adapter = _make_mock_adapter()
+        adapter.call_with_tools.return_value = LLMResponse(
+            content="Analysis complete.",
+            tool_calls=[],
+        )
+        executor = AgentExecutor(registry, adapter, max_steps=1)
+
+        with patch(
+            "src.agent.executor._build_language_section",
+            return_value="## Output Language\n\n- Reply in English.",
+        ) as build_language_section:
+            executor.run("Analyze 600519", context={"stock_code": "600519"})
+
+        build_language_section.assert_called_once_with("en")
+
     def test_chat_injects_compressed_history_before_report_context_and_current_user(self):
         registry = _make_registry_with_echo()
         adapter = _make_mock_adapter()
