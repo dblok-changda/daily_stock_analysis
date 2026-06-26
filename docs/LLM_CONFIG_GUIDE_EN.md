@@ -84,7 +84,7 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
 # Fill in the platform's API Base URL (Very Important: Usually must end with /v1)
 OPENAI_BASE_URL=https://api.siliconflow.cn/v1
 # Fill in the specific model name (Very Important: You must add the "openai/" prefix so the system recognizes it)
-LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3 
+LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3
 ```
 
 ### Example 2: Using the Official DeepSeek API

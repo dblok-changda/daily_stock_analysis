@@ -1,65 +1,47 @@
 ---
-name: Bug 报告 / Bug Report
-about: 报告一个问题帮助我们改进 / Report a problem to help us improve
-title: '[Bug] '
+name: Bug report
+about: Report a reproducible problem so we can improve the project
+title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 <!--
-中文用户请直接填写下方表单。
-English users: fill in the English fields below (marked with 🌐).
+Please update to the latest version or latest main branch before filing.
+Do not include API keys, tokens, cookies, private URLs, or account data.
 -->
 
-## ⚠️ 提交前必读 / Before You Submit
+## Summary
 
-请确认已更新到最新版本后再提交 Issue，避免重复报告已修复的问题。  
-Please confirm you are on the latest version before filing, to avoid duplicate reports of already-fixed issues.
+Describe the problem, impact, and when it happens.
 
-## 版本确认 / Version Check（必填 / Required）
-- [ ] 我已同步最新代码 / I am on the latest commit (Fork users: Sync fork first, then re-run Actions)
-- 代码版本 / Commit hash:
-  - 本地 / Local: `git rev-parse --short HEAD` → ______
-  - GitHub Actions: commit hash shown at the top of the workflow log → ______
+## Steps To Reproduce
 
-## 问题描述 / Problem Description
+1.
+2.
+3.
 
-简明扼要地描述遇到的问题。  
-Briefly describe the problem.
+## Expected Behavior
 
-## 复现步骤 / Reproduction Steps
+What should happen?
 
-1. 执行命令 / Run command '...'
-2. 配置 / Config '...'
-3. 查看 / View '...'
-4. 出现错误 / Error occurs
+## Actual Behavior
 
-## 期望行为 / Expected Behavior
+What happened instead?
 
-描述你期望发生的情况。  
-Describe what you expected to happen.
+## Environment
 
-## 实际行为 / Actual Behavior
+- OS:
+- Python version:
+- Install method:
+- Run command:
+- Deployment target, if applicable:
 
-描述实际发生的情况。  
-Describe what actually happened.
+## Logs Or Screenshots
 
-## 错误日志 / Error Logs
+Paste relevant logs or screenshots. Redact secrets first.
 
-```
-Paste relevant error logs here
-```
+## Additional Context
 
-## 环境信息 / Environment
-
-- 操作系统 / OS: [e.g. Ubuntu 22.04 / Windows 11 / macOS 14]
-- Python 版本 / Python version: [e.g. 3.11]
-- 运行方式 / Run mode: [Local / Docker / GitHub Actions]
-- 相关配置 / Relevant config:
-  - GEMINI_MODEL / AI model: 
-  - 数据源 / Data source: 
-
-## 其他信息 / Additional Context
-
-添加任何其他有关问题的信息或截图。  
-Add any other context or screenshots about the problem.
+Add any provider, market, stock symbol, workflow, or configuration context that
+helps reproduce the issue.

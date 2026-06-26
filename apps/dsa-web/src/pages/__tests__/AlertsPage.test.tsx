@@ -73,6 +73,7 @@ function createDeferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.setItem('dsa.uiLanguage', 'zh');
   listRules.mockResolvedValue({ items: [rule], total: 1, page: 1, pageSize: 20 });
   listTriggers.mockResolvedValue({
     items: [

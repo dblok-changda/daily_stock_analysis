@@ -1,7 +1,7 @@
 import type { ReportLanguage } from '../types/analysis';
 
 export const normalizeReportLanguage = (value?: string | null): ReportLanguage =>
-  value === 'en' ? 'en' : 'zh';
+  value === 'zh' ? 'zh' : 'en';
 
 const REPORT_TEXT = {
   zh: {

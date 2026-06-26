@@ -284,6 +284,7 @@ describe('PortfolioPage FX refresh', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    window.localStorage.setItem(UI_LANGUAGE_STORAGE_KEY, 'zh');
 
     getAccounts.mockResolvedValue(makeAccounts());
     getSnapshot.mockImplementation(async ({ accountId }: { accountId?: number } = {}) => makeSnapshot({ accountId, fxStale: true }));

@@ -41,12 +41,12 @@ def summarize_decision_signal(item: Any) -> Optional[Dict[str, Any]]:
     return summary or None
 
 
-def format_decision_signal_excerpt(summary: Any, report_language: str = "zh") -> str:
+def format_decision_signal_excerpt(summary: Any, report_language: str = "en") -> str:
     """Format a compact public DecisionSignal excerpt for notification text."""
 
     if not isinstance(summary, dict) or not summary:
         return ""
-    language = "en" if str(report_language or "").lower().startswith("en") else "zh"
+    language = "en" if str(report_language or "en").lower().startswith("en") else "zh"
     labels = {
         "zh": {
             "heading": "AI 决策信号",

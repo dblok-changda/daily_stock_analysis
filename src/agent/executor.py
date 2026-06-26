@@ -516,7 +516,7 @@ class AgentExecutor:
         default_skill_policy_section = ""
         if self.default_skill_policy:
             default_skill_policy_section = f"\n{self.default_skill_policy}\n"
-        report_language = normalize_report_language((context or {}).get("report_language", "zh"))
+        report_language = normalize_report_language((context or {}).get("report_language", "en"))
         stock_code = (context or {}).get("stock_code", "")
         market_role = get_market_role(stock_code, report_language)
         market_guidelines = get_market_guidelines(stock_code, report_language)
@@ -568,7 +568,7 @@ class AgentExecutor:
         default_skill_policy_section = ""
         if self.default_skill_policy:
             default_skill_policy_section = f"\n{self.default_skill_policy}\n"
-        report_language = normalize_report_language((context or {}).get("report_language", "zh"))
+        report_language = normalize_report_language((context or {}).get("report_language", "en"))
         stock_code = (context or {}).get("stock_code", "")
         market_role = get_market_role(stock_code, report_language)
         market_guidelines = get_market_guidelines(stock_code, report_language)
@@ -793,7 +793,7 @@ class AgentExecutor:
         """Build the initial user message."""
         parts = [task]
         if context:
-            report_language = normalize_report_language(context.get("report_language", "zh"))
+            report_language = normalize_report_language(context.get("report_language", "en"))
             if context.get("stock_code"):
                 parts.append(f"\n股票代码: {context['stock_code']}")
             if context.get("report_type"):

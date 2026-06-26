@@ -892,7 +892,7 @@ class HistoryService:
         """
         report_date = record.created_at.strftime("%Y-%m-%d") if record.created_at else datetime.now().strftime("%Y-%m-%d")
         report_time = record.created_at.strftime("%H:%M:%S") if record.created_at else datetime.now().strftime("%H:%M:%S")
-        report_language = normalize_report_language(getattr(result, "report_language", "zh"))
+        report_language = normalize_report_language(getattr(result, "report_language", "en"))
         labels = get_report_labels(report_language)
         analysis_date_label = "Analysis Date" if report_language == "en" else "分析日期"
         report_time_label = "Report Time" if report_language == "en" else "报告生成时间"
@@ -1168,7 +1168,7 @@ class HistoryService:
         return get_signal_level(
             result.operation_advice,
             result.sentiment_score,
-            getattr(result, "report_language", "zh"),
+            getattr(result, "report_language", "en"),
         )
 
     @staticmethod

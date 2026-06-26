@@ -1,16 +1,16 @@
-# 环境变量文件（包含敏感信息，禁止提交）
+# notefiles（note，note）
 .env
 .env.*
 *.env
 *.env.local
 .env.*.local
 
-# 测试文件（可能包含敏感配置）
-# 仅忽略仓库根目录下的临时 test_*.py 脚本；tests/ 目录下的单元测试需要纳入版本控制。
+# notefiles（noteconfiguration）
+# noteignorenotedirectoriesnotetemporary test_*.py note；tests/ directoriesnoterequiresnote。
 /test_*.py
 /test.sh
 
-# 本地评审与高级路由配置（可能包含敏感信息或临时分析产物）
+# Local review and advanced routing configuration（may contain sensitive information or temporary analysis artifacts）
 /.codex
 /review.md
 /litellm_config.yaml
@@ -38,7 +38,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# 虚拟环境
+# note
 venv/
 ENV/
 env/
@@ -52,7 +52,7 @@ env/
 *~
 .cursorrules
 
-# 数据和日志
+# Data and logs
 /data/
 /.llm_usage_hmac_secret
 **/.llm_usage_hmac_secret
@@ -62,11 +62,11 @@ reports/
 *.sqlite
 *.sqlite3
 
-# 系统文件
+# System files
 .DS_Store
 Thumbs.db
 
-# 测试
+# note
 .pytest_cache/
 .coverage
 htmlcov/

@@ -145,6 +145,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.setItem('dsa.uiLanguage', 'zh');
   mockStoreState.messages = [];
   mockStoreState.loading = false;
   mockStoreState.progressSteps = [];

@@ -115,7 +115,7 @@ Go to your forked repo → `Settings` → `Secrets and variables` → `Actions` 
 |------------|------|:----:|
 | `SINGLE_STOCK_NOTIFY` | Single stock push mode: set to `true` to push immediately after each stock analysis | Optional |
 | `REPORT_TYPE` | Report type: `simple` (concise), `full` (complete), `brief` (3-5 sentences), Docker recommended: `full` | Optional |
-| `REPORT_LANGUAGE` | Report output language: `zh` (default Chinese) / `en` (English); also updates prompt instructions, templates, notification fallbacks, and fixed copy in the Web report view. The bundled `00-daily-analysis.yml` already maps this variable, so setting it in Actions Secrets/Variables works out of the box | Optional |
+| `REPORT_LANGUAGE` | Report output language: `en` (default English) / `zh` (Chinese); also updates prompt instructions, templates, notification fallbacks, and fixed copy in the Web report view. The bundled `00-daily-analysis.yml` already maps this variable, so setting it in Actions Secrets/Variables works out of the box | Optional |
 | `REPORT_SHOW_LLM_MODEL` | Whether notification report footers show the LLM model used for analysis. Defaults to `true`; set to `false` to hide runtime model metadata. This switch only affects presentation and does not change provider/model/Base URL, LiteLLM routing, or runtime model save/migration/cleanup behavior. | Optional |
 | `REPORT_TEMPLATES_DIR` | Jinja2 template directory (relative to project root, default `templates`) | Optional |
 | `REPORT_RENDERER_ENABLED` | Enable Jinja2 template rendering (default `false`, zero regression) | Optional |
@@ -701,7 +701,7 @@ Market-phase context construction still supports the legacy internal `analysis_i
 
 ### Web Phase Labels (Issue #1386 P4b)
 
-P4b completes the Web visibility slice without adding a phase override selector. The in-progress TaskPanel only shows the requested `analysis_phase` echoed by P4a; in the current task-panel UI, `auto` is explicitly labeled as the requested automatic phase (`请求阶段: 自动阶段`) and is not presented as the final inferred phase. The final report page renders the actual market phase from `report.meta.market_phase_summary.phase`, and shows a `Partial bar` marker when `is_partial_bar=true`.
+P4b completes the Web visibility slice without adding a phase override selector. The in-progress TaskPanel only shows the requested `analysis_phase` echoed by P4a; in the current task-panel UI, `auto` is explicitly labeled as the requested automatic phase (`request stage: automatic stage`) and is not presented as the final inferred phase. The final report page renders the actual market phase from `report.meta.market_phase_summary.phase`, and shows a `Partial bar` marker when `is_partial_bar=true`.
 
 Data-quality visibility continues to reuse `report.details.analysis_context_pack_overview.data_quality` and the existing `AnalysisContextSummary` component. The Web UI only displays the phase label alongside the low-sensitivity data-quality summary; it does not expose the full `AnalysisContextPack`, prompt summary, raw payloads, or stripped snapshot internals. History-list fields, Bot, schedule, GitHub Actions, Desktop, notification summaries, and advanced phase override UI remain follow-up work.
 
@@ -1144,14 +1144,14 @@ Single-stock reports now keep the existing free-text `operation_advice` and add 
 
 | `action` | Common source text | `decision_type` bridge |
 | --- | --- | --- |
-| `buy` | `strong_buy`, `强烈买入`, `buy`, `买入`, `布局`, `建仓` | `buy` |
-| `add` | `add`, `加仓`, `增持`, `accumulate` | `buy` |
-| `hold` | `hold`, `持有`, `持有观察`, `洗盘观察` | `hold` |
-| `watch` | `watch`, `观望`, `等待`, `wait` | `hold` |
-| `reduce` | `reduce`, `减仓`, `trim` | `sell` |
-| `sell` | `sell`, `卖出`, `清仓`, `strong_sell`, `强烈卖出` | `sell` |
-| `avoid` | `avoid`, `回避`, `规避`, `不建议买入`, `避免买入`, `do not buy` | `hold` |
-| `alert` | `alert`, `风险预警`, `警惕`, `触发告警`, `risk alert` | `hold` |
+| `buy` | `strong_buy`, `strong_buy`, `buy`, `buy`, `build_position`, `open_position` | `buy` |
+| `add` | `add`, `add_position`, `increase_position`, `accumulate` | `buy` |
+| `hold` | `hold`, `hold`, `hold_watch`, `pullback_watch` | `hold` |
+| `watch` | `watch`, `watch`, `wait`, `wait` | `hold` |
+| `reduce` | `reduce`, `reduce_position`, `trim` | `sell` |
+| `sell` | `sell`, `sell`, `exit_position`, `strong_sell`, `strong_sell` | `sell` |
+| `avoid` | `avoid`, `avoid`, `avoid`, `avoid_buy`, `avoid_buy`, `do not buy` | `hold` |
+| `alert` | `alert`, `risk_warning`, `caution`, `trigger_alert`, `risk alert` | `hold` |
 
 The `decision_type` bridge in the table only documents compatibility between the eight-state action taxonomy and the legacy three-state statistics contract. #1390 P0 does not automatically write `action` back into the existing `decision_type`. If upstream sends both an explicit `action` and a semantically different `decision_type`, legacy statistics, backtesting, and old report semantics still follow `decision_type` / the existing inference chain; `action/action_label` remains structured display metadata.
 
@@ -1165,7 +1165,7 @@ Unknown or ambiguous advice is not coerced into `watch` or `hold`; it returns em
 
 Automatic extraction consumes structured fields from the completed report only. It does not parse Markdown, backfill old history, add configuration, or change the main report contract. Extraction failures, unknown or ambiguous advice, non-stock reports, and unrecognized markets skip signal writes without affecting report persistence. `source_report_id` is the just-saved `AnalysisHistory.id`; `trace_id` prefers the runtime diagnostics trace and falls back to the pipeline trace or `query_id`; `stock_name` comes from `AnalysisResult.name`; `trigger_source` comes from the runtime entrypoint and falls back to `system`.
 
-For P2 automatic extraction, `market_phase` first reads `market_phase_summary.phase` from the saved context snapshot and then falls back to `AnalysisResult.market_phase_summary.phase`; data quality first reads `analysis_context_pack_overview.data_quality` from the saved context snapshot and then falls back to `AnalysisResult.analysis_context_pack_overview.data_quality`. Price-plan extraction reuses the same sniper-point parser used by history persistence, mapping `dashboard.battle_plan.sniper_points.ideal_buy/secondary_buy/stop_loss/take_profit` to `entry_low/entry_high/stop_loss/target_price`; `ideal_buy` alone writes `entry_low`, `secondary_buy` alone writes `entry_high`, and when both are present they are sorted into `entry_low <= entry_high`. Missing stop-loss or target prices only lower the service-computed `plan_quality` instead of inventing fields. `watch_conditions` first reads `dashboard.phase_decision.watch_conditions` and then falls back to `dashboard.battle_plan.action_checklist`. `catalyst_summary` is written only when `dashboard.intelligence.positive_catalysts` exists and is a list. `confidence` uses a conservative report-level mapping: `高/high=0.8`, `中/medium/mid=0.6`, `低/low=0.4`; the original report confidence level remains in `metadata`.
+For P2 automatic extraction, `market_phase` first reads `market_phase_summary.phase` from the saved context snapshot and then falls back to `AnalysisResult.market_phase_summary.phase`; data quality first reads `analysis_context_pack_overview.data_quality` from the saved context snapshot and then falls back to `AnalysisResult.analysis_context_pack_overview.data_quality`. Price-plan extraction reuses the same sniper-point parser used by history persistence, mapping `dashboard.battle_plan.sniper_points.ideal_buy/secondary_buy/stop_loss/take_profit` to `entry_low/entry_high/stop_loss/target_price`; `ideal_buy` alone writes `entry_low`, `secondary_buy` alone writes `entry_high`, and when both are present they are sorted into `entry_low <= entry_high`. Missing stop-loss or target prices only lower the service-computed `plan_quality` instead of inventing fields. `watch_conditions` first reads `dashboard.phase_decision.watch_conditions` and then falls back to `dashboard.battle_plan.action_checklist`. `catalyst_summary` is written only when `dashboard.intelligence.positive_catalysts` exists and is a list. `confidence` uses a conservative report-level mapping: `high/high=0.8`, `medium/medium/mid=0.6`, `low/low=0.4`; the original report confidence level remains in `metadata`.
 
 Starting with P3, `DecisionSignalService` owns lifecycle defaults. Explicit `horizon` / `expires_at` values always win. When `horizon` is omitted, `alert` or `premarket/intraday/lunch_break/closing_auction` defaults to `intraday`, while `postmarket/non_trading/unknown` or missing phase context defaults to `3d`. When `expires_at` is omitted, `intraday` first uses `metadata.market_phase_summary.minutes_to_close/minutes_to_open`; without context it uses deterministic TTL fallback values (CN 4h, HK 5.5h, US 6.5h, unknown 4h). `1d/3d/5d/10d` use natural days, and `swing/long` do not auto-expire. The fallback TTL is only a no-context degradation path, not an exchange-calendar close time. Automatic extraction writes only low-sensitive `market_phase_summary.phase/session_date/minutes_to_open/minutes_to_close` hints into `metadata.market_phase_summary`; final `horizon/expires_at` values are still computed by the service.
 

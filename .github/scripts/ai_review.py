@@ -76,97 +76,94 @@ def classify_files(files):
 
 
 def _build_ci_context():
-    """Build CI context section from environment variables set by the workflow."""
-    auto_check_result = os.environ.get('CI_AUTO_CHECK_RESULT', '')
-    syntax_ok = os.environ.get('CI_SYNTAX_OK', '')
-    has_py = os.environ.get('CI_HAS_PY_CHANGES', 'false')
+    lines = ["## Static Check Context"]
+    static_status = os.environ.get('STATIC_CHECK_STATUS', '').strip()
+    syntax_status = os.environ.get('SYNTAX_CHECK_STATUS', '').strip()
+    syntax_message = os.environ.get('SYNTAX_CHECK_MESSAGE', '').strip()
+    has_backend_changes = os.environ.get('HAS_BACKEND_CHANGES', '').strip() == 'true'
+    has_frontend_changes = os.environ.get('HAS_FRONTEND_CHANGES', '').strip() == 'true'
+    has_workflow_changes = os.environ.get('HAS_WORKFLOW_CHANGES', '').strip() == 'true'
 
-    if not auto_check_result:
-        return """
-## CI 检查状态
-> ⚠️ 未获取到 CI 检查结果。审查时不得假设 CI 已通过，验证相关判断应标注为"无法确认"。
-"""
-
-    lines = ["\n## CI 检查状态（来自本次 PR 的自动化流水线）"]
-    lines.append(f"- 静态检查总体结果: **{'✅ 通过' if auto_check_result == 'success' else '❌ 失败'}**")
-    if has_py == 'true':
-        lines.append(f"- Python 语法检查 (py_compile): **{'✅ 通过' if syntax_ok == 'true' else '❌ 失败' if syntax_ok == 'false' else '⏭️ 未执行'}**")
-        lines.append("- Flake8 严重错误检查 (E9/F63/F7/F82): **✅ 通过**（若未通过则静态检查总体会失败）")
+    if static_status:
+        lines.append(f"- Overall static checks: **{static_status}**")
+    if syntax_status:
+        lines.append(f"- Python syntax checks: **{syntax_status}**")
+    if syntax_message:
+        lines.append(f"  - Details: {syntax_message}")
     else:
-        lines.append("- Python 文件: 无变更，语法检查已跳过")
+        lines.append("  - Details: no changed backend files; syntax check skipped")
+
+    lines.append(
+        f"- Change areas: backend={has_backend_changes}, frontend={has_frontend_changes}, workflow={has_workflow_changes}"
+    )
     lines.append("")
-    lines.append("> 以上 CI 仅覆盖语法正确性（py_compile）和致命 lint 错误（flake8 E9/F63/F7/F82）。`./scripts/ci_gate.sh` **未包含在 CI 中**：对 Python 后端改动，若 PR 描述未说明该 gate 是否执行（或给出跳过原因），应在建议项中注明，但不构成阻断。语法/flake8 已通过则无需重复贴对应本地输出。")
-    lines.append("")
-    return '\n'.join(lines)
+    lines.append(
+        "If these static checks passed, do not repeat their local output. Review semantics, contracts, compatibility, rollback, and test coverage instead."
+    )
+    return "\n".join(lines)
 
 
 def build_prompt(diff_content, files, truncated, pr_title, pr_body):
-    """Build AI review prompt aligned with AGENTS.md requirements."""
-    truncate_notice = ''
-    if truncated:
-        truncate_notice = "\n\n> ⚠️ 注意：diff 过长已截断，请基于可见内容审查并标注不确定点。\n"
+    file_list = "\n".join(f"- {f}" for f in files[:80])
+    if len(files) > 80:
+        file_list += f"\n- ... {len(files) - 80} more files"
 
-    py_files, doc_files, frontend_files, ci_files, config_files = classify_files(files)
+    truncation_note = (
+        f"\n\nDiff content was truncated to {MAX_DIFF_CHARS} characters. Review only visible content and clearly mark uncertainty."
+        if truncated else ""
+    )
+
     ci_context = _build_ci_context()
-    return f"""你是本仓库的 PR 审查助手。请根据变更内容和 PR 描述，执行“代码 + 文档 + CI”联合审查。
+    pr_body = pr_body or "(PR body unavailable)"
+    pr_title = pr_title or "(PR title unavailable)"
 
-## PR 信息
-- 标题: {pr_title or '(empty)'}
-- 描述:
-{pr_body or '(empty)'}
+    return f"""
+You are the code review assistant for this repository.
 
-## 修改文件统计
-- Python: {len(py_files)}
-- Docs/Markdown: {len(doc_files)}
-- Frontend (apps/dsa-web): {len(frontend_files)}
-- CI Workflow: {len(ci_files)}
-- Config/Template: {len(config_files)}
+Review only the visible PR diff and context. Do not assume CI passed unless the provided static-check context says so. If information is missing, write "cannot confirm" instead of guessing.
 
-修改文件列表:
-{', '.join(files)}{truncate_notice}
+## Repository Review Rules
 
-## 代码变更 (diff)
+Block merge only for:
+- Correctness or security bugs.
+- Blocking CI/static checks failing.
+- PR description materially contradicting the actual diff.
+- Missing rollback plan.
+- Clear contract drift that would break runtime, API, Web/Desktop, workflow, configuration, or notification behavior.
+
+Put non-blocking issues under suggestions instead of blockers, including formatting issues, title style, minor PR body gaps, missing optional evidence, or unclear but non-fatal verification.
+
+For backend changes, check whether `./scripts/ci_gate.sh` or equivalent targeted validation is reported. If static checks passed, do not require duplicate local command output. If validation is missing or insufficient, mark verification as "cannot confirm" and explain the gap.
+
+## Required Output Structure
+
+1. **Merge decision**: one of `pass`, `block`, or `cannot_confirm`.
+2. **Blockers**: only issues matching the blocker criteria above. Include file paths when possible.
+3. **Suggestions**: non-blocking review comments.
+4. **Verification**: summarize what can and cannot be confirmed from the provided evidence.
+5. **Compatibility and rollback**: note config/API/provider/model/Base URL/LiteLLM/workflow/report/notification compatibility risks and whether rollback is described.
+
+## PR Title
+
+{pr_title}
+
+## PR Body
+
+{pr_body}
+
+{ci_context}
+
+## Changed Files
+
+{file_list}
+
+## Diff
+
 ```diff
 {diff_content}
 ```
-{ci_context}
-## 必须对齐的审查规则（来自仓库 AGENTS.md）
-1. 必要性（Necessity）：是否有明确问题/业务价值，避免无效重构。
-2. 关联性（Traceability）：是否有关联 Issue（Fixes/Refs）；自然语言关联（如"关联 issue 为 #xxx"）也可接受，不因格式问题判定不通过。无 Issue 时是否给出动机与验收标准。
-3. 类型判定（Type）：fix/feat/refactor/docs/chore/test 是否匹配。
-4. 描述完整性（Description Completeness）：是否包含背景、范围、验证命令与结果、兼容性风险、回滚方案。判断验证是否充分时，必须参考上方"CI 检查状态"段落：（a）若 py_compile 和 flake8 已通过，PR 描述中可引用 CI 结果而不必贴对应本地输出；（b）`./scripts/ci_gate.sh` 不在 CI 覆盖范围，对 Python 后端改动需检查 PR 描述是否说明了该 gate 的执行情况，若未说明应列为建议项；（c）若未提供 CI 结果，则不得假设 CI 已通过，验证充分性应标注为"无法确认"。
-5. 合入判定（Merge Readiness）：给出 Ready / Not Ready，并列出阻断项。
-6. 若涉及用户可见能力，检查 README.md 与 docs/CHANGELOG.md 是否同步。
-
-## 阻断 vs 建议的判定标准
-仅以下问题可判定为 Not Ready（阻断项/必改项）：
-- 代码存在正确性或安全性问题（逻辑错误、异常吞没、安全漏洞等）
-- CI 检查未通过
-- PR 描述与实际改动内容存在实质性矛盾
-- 缺少回滚方案
-
-以下问题仅放入建议项，不影响合入判定：
-- issue 关联格式不规范
-- 语法/flake8 验证证据缺失但上方"CI 检查状态"显示 py_compile 和 flake8 均通过
-- Python 后端改动的 PR 描述未说明 `./scripts/ci_gate.sh` 是否执行或给出跳过原因
-- 描述中非关键性措辞或格式问题
-- 注释语言风格、无关锁文件变更等
-
-## 审查输出要求
-- 使用中文。
-- 先给"结论"：`Ready to Merge` 或 `Not Ready`。
-- 再给结构化结果：
-  - 必要性：通过/不通过 + 理由
-  - 关联性：通过/不通过 + 证据
-  - 类型：建议类型
-  - 描述完整性：完整/不完整（缺失项）
-  - 风险级别：低/中/高 + 关键风险
-  - 必改项（最多 5 条，仅限阻断条件，按优先级）
-  - 建议项（最多 5 条）
-- 必改项仅包含上述阻断条件中的问题；格式、关联、验证证据等非阻断问题放入建议项。
-- 对发现的问题，尽量定位到文件路径并说明影响。
-- 如果信息不足，明确写“基于当前 diff/PR 描述无法确认”。
-"""
+{truncation_note}
+""".strip()
 
 
 def review_with_gemini(prompt):
@@ -175,10 +172,10 @@ def review_with_gemini(prompt):
     model = os.environ.get('GEMINI_MODEL') or os.environ.get('GEMINI_MODEL_FALLBACK') or 'gemini-2.5-flash'
 
     if not api_key:
-        print("❌ Gemini API Key 未配置（检查 GitHub Secrets: GEMINI_API_KEY）")
+        print("❌ Gemini API Key not configured（check GitHub Secrets: GEMINI_API_KEY）")
         return None
 
-    print(f"🤖 使用模型: {model}")
+    print(f"🤖 Using model: {model}")
 
     try:
         from google import genai
@@ -187,14 +184,14 @@ def review_with_gemini(prompt):
             model=model,
             contents=prompt
         )
-        print(f"✅ Gemini ({model}) 审查成功")
+        print(f"✅ Gemini ({model}) review succeeded")
         return response.text
     except ImportError as e:
-        print(f"❌ Gemini 依赖未安装: {e}")
-        print("   请确保安装了 google-genai: pip install google-genai")
+        print(f"❌ Gemini dependency is not installed: {e}")
+        print("   ensure installed google-genai: pip install google-genai")
         return None
     except Exception as e:
-        print(f"❌ Gemini 审查失败: {e}")
+        print(f"❌ Gemini review failed: {e}")
         traceback.print_exc()
         return None
 
@@ -206,11 +203,11 @@ def review_with_openai(prompt):
     model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
     if not api_key:
-        print("❌ OpenAI API Key 未配置（检查 GitHub Secrets: OPENAI_API_KEY）")
+        print("❌ OpenAI API Key not configured（check GitHub Secrets: OPENAI_API_KEY）")
         return None
 
     print(f"🌐 Base URL: {base_url}")
-    print(f"🤖 使用模型: {model}")
+    print(f"🤖 Using model: {model}")
 
     try:
         from openai import OpenAI
@@ -221,14 +218,14 @@ def review_with_openai(prompt):
             max_tokens=2000,
             temperature=0.3
         )
-        print(f"✅ OpenAI 兼容接口 ({model}) 审查成功")
+        print(f"✅ OpenAI compatibility endpoint ({model}) review succeeded")
         return response.choices[0].message.content
     except ImportError as e:
-        print(f"❌ OpenAI 依赖未安装: {e}")
-        print("   请确保安装了 openai: pip install openai")
+        print(f"❌ OpenAI dependency is not installed: {e}")
+        print("   ensure installed openai: pip install openai")
         return None
     except Exception as e:
-        print(f"❌ OpenAI 兼容接口审查失败: {e}")
+        print(f"❌ OpenAI compatibility endpoint review failed: {e}")
         traceback.print_exc()
         return None
 
@@ -242,7 +239,7 @@ def ai_review(diff_content, files, truncated):
     if result:
         return result
 
-    print("尝试使用 OpenAI 兼容接口...")
+    print("trying OpenAI compatibility endpoint...")
     result = review_with_openai(prompt)
     if result:
         return result
@@ -255,16 +252,16 @@ def main():
     files = get_changed_files()
 
     if not diff or not files:
-        print("没有可审查的代码/文档/配置变更，跳过 AI 审查")
+        print("no reviewable code/docs/configuration changes，skipped AI review")
         summary_file = os.environ.get('GITHUB_STEP_SUMMARY')
         if summary_file:
             with open(summary_file, 'a', encoding='utf-8') as f:
-                f.write("## 🤖 AI 代码审查\n\n✅ 没有可审查变更\n")
+                f.write("## 🤖 AI code review\n\n✅ no reviewable changes\n")
         return
 
-    print(f"审查文件: {files}")
+    print(f"review files: {files}")
     if truncated:
-        print(f"⚠️ Diff 内容已截断至 {MAX_DIFF_LENGTH} 字符")
+        print(f"⚠️ Diff content truncated to {MAX_DIFF_LENGTH} characters")
 
     review = ai_review(diff, files, truncated)
 
@@ -275,17 +272,17 @@ def main():
     if review:
         if summary_file:
             with open(summary_file, 'a', encoding='utf-8') as f:
-                f.write(f"## 🤖 AI 代码审查\n\n{review}\n")
+                f.write(f"## 🤖 AI code review\n\n{review}\n")
 
         with open('ai_review_result.txt', 'w', encoding='utf-8') as f:
             f.write(review)
 
-        print("AI 审查完成")
+        print("AI review completed")
     else:
-        print("⚠️ 所有 AI 接口都不可用")
+        print("⚠️ all AI APIs are unavailable")
         if summary_file:
             with open(summary_file, 'a', encoding='utf-8') as f:
-                f.write("## 🤖 AI 代码审查\n\n⚠️ AI 接口不可用，请检查配置\n")
+                f.write("## 🤖 AI code review\n\n⚠️ AI API is unavailable，check configuration\n")
         if strict_mode:
             raise SystemExit("AI_REVIEW_STRICT=true and no AI review result is available")
 
