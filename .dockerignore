@@ -1,30 +1,30 @@
-# 忽略 Python 缓存
+# ignore Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# 忽略虚拟环境
+# ignorenote
 venv/
 .venv/
 env/
 .env.local
 
-# 忽略 IDE
+# ignore IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# 忽略数据文件（可选，如果想持久化就注释掉）
+# ignoredatafiles（optional，ifnote）
 # data/
 # logs/
 # reports/
 
-# 忽略测试文件
+# ignorenotefiles
 test_*.py
 *_test.py
 
-# 忽略文档
+# ignorenote
 *.md
 !README.md

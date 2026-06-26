@@ -1,14 +1,14 @@
-# 自动关闭过期的 Issues 和 PR
-# 每天检查一次，标记长时间无响应的 issues/PRs
-
-name: Stale Issues & PRs
+name: Mark and close stale issues and PRs
 
 on:
   schedule:
-    # 每天 UTC 0:00（北京时间 8:00）检查一次
-    - cron: '0 0 * * *'
-  # 支持手动触发
+    - cron: "20 2 * * *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print actions without applying changes"
+        required: false
+        default: "false"
 
 permissions:
   issues: write
@@ -16,64 +16,43 @@ permissions:
 
 jobs:
   stale:
-    name: 🧹 清理过期 Issues/PRs
+    name: Clean stale content
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 🏷️ 标记并关闭过期内容
+      - name: Mark and close stale issues and PRs
         uses: actions/stale@v10
         with:
-          # ===== Issue 配置 =====
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-issue-stale: 7
           days-before-issue-close: 7
-          stale-issue-label: 'stale'
-          stale-issue-message: |
-            👋 这个 Issue 已经 **7 天** 没有活动了。
-            
-            如果问题仍然存在，请回复说明最新情况，我们会继续跟进。
-            如果问题已解决或不再需要，可以直接关闭此 Issue。
-            
-            **如果 7 天内没有回复，此 Issue 将自动关闭。**
-          close-issue-message: |
-            🔒 由于长时间没有活动，此 Issue 已自动关闭。
-            
-            如果问题仍然存在，欢迎重新打开或创建新的 Issue。
-          
-          # ===== PR 配置 =====
           days-before-pr-stale: 21
           days-before-pr-close: 14
-          stale-pr-label: 'stale'
-          stale-pr-message: |
-            👋 这个 PR 已经 **21 天** 没有活动了。
-            
-            请检查是否需要：
-            - 解决合并冲突
-            - 回复 review 意见
-            - 更新代码
-            
-            **如果 14 天内没有更新，此 PR 将自动关闭。**
-          close-pr-message: |
-            🔒 由于长时间没有活动，此 PR 已自动关闭。
-            
-            如果您仍希望合入这些更改，请重新打开或创建新的 PR。
-          
-          # ===== 排除规则 =====
-          # 带有这些标签的不会被标记为 stale
-          exempt-issue-labels: 'pinned,security,enhancement,help wanted,good first issue'
-          exempt-pr-labels: 'pinned,security,work-in-progress,wip'
-          
-          # 排除草稿 PR
-          exempt-draft-pr: true
-          
-          # ===== 其他配置 =====
-          # 每次运行最多处理的数量
-          operations-per-run: 50
-          
-          # 只处理这些状态的
-          only-labels: ''
-          
-          # 移除 stale 标签（当有新活动时）
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: pinned,security,good first issue,help wanted
+          exempt-pr-labels: pinned,security,work in progress,dependencies
+          operations-per-run: 100
           remove-stale-when-updated: true
-          
-          # 调试模式（设为 true 时只打印不实际操作）
-          debug-only: false
+          ascending: true
+          debug-only: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
+          stale-issue-message: |
+            This issue has had no activity for 7 days.
+
+            Please check whether it needs updated reproduction steps, confirmation
+            against the latest version, or clearer expected behavior. If the issue
+            is resolved, you can close it directly. If it still exists, reply with
+            the latest status and we will continue to follow up.
+          close-issue-message: |
+            This issue was closed automatically because it had no activity for a
+            long time. If it still exists, reopen it or create a new issue with
+            updated context.
+          stale-pr-message: |
+            This PR has had no activity for 21 days.
+
+            If you still want these changes merged, update the code, resolve merge
+            conflicts, and reply with the latest status. Draft PRs and PRs with
+            excluded labels are not marked stale.
+          close-pr-message: |
+            This PR was closed automatically because it had no activity for a long
+            time. If you want to continue, reopen it after updating the branch or
+            create a new PR.

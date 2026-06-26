@@ -1,38 +1,39 @@
 ---
-name: 功能建议 / Feature Request
-about: 提出新功能或改进建议 / Suggest a new feature or improvement
-title: '[Feature] '
+name: Feature request
+about: Suggest a new feature or improvement
+title: "[Feature] "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
-<!--
-中文用户请直接填写下方表单。
-English users: fill in the English fields below.
--->
+## Problem
 
-## 功能描述 / Feature Description
+What user problem or workflow gap should this solve?
 
-简明扼要地描述你希望增加的功能。  
-Briefly describe the feature you would like added.
+## Proposed Solution
 
-## 使用场景 / Use Case
+Describe the expected behavior and scope.
 
-描述在什么情况下需要这个功能。  
-Describe the situation where this feature would be useful.
+## Use Case
 
-## 期望实现 / Proposed Solution
+Who uses this and when?
 
-描述你期望这个功能如何工作。  
-Describe how you would expect this feature to work.
+## Alternatives
 
-## 备选方案 / Alternatives Considered
+What alternatives or workarounds have you considered?
 
-描述你考虑过的其他替代方案。  
-Describe any alternative solutions you have considered.
+## Compatibility And Risk
 
-## 相关信息 / Additional Context
+Does this affect configuration, API schemas, reports, notifications, workflows,
+or existing data?
 
-- 是否愿意贡献代码实现 / Willing to implement: [Yes / No]
-- 参考链接 / Reference links:
-- 其他说明 / Other notes:
+## Contribution
+
+Are you willing to contribute an implementation?
+
+- [ ] Yes
+- [ ] No
+
+## References
+
+Add links, screenshots, examples, or related issues.
