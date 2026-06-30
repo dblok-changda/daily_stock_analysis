@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 
@@ -9,16 +10,28 @@ def _read_doc() -> str:
     return DOC_PATH.read_text(encoding="utf-8")
 
 
+def _read_api_spec():
+    return json.loads(API_SPEC_PATH.read_text(encoding="utf-8"))
+
+
 def test_decision_signal_doc_lists_schema_and_storage_contracts():
     doc = _read_doc()
+    api_spec = _read_api_spec()
 
-    for token in (
-        "DecisionSignal",
+    assert "DecisionSignal" in doc
+
+    schema_names = (
         "DecisionSignalCreateRequest",
         "DecisionSignalItem",
         "DecisionSignalOutcomeItem",
         "DecisionSignalFeedbackRequest",
         "PortfolioDecisionSignalRiskBlock",
+    )
+    for schema_name in schema_names:
+        assert schema_name in doc
+        assert schema_name in api_spec["components"]["schemas"]
+
+    for token in (
         "`decision_signals`",
         "`decision_signal_feedback`",
         "`decision_signal_outcomes`",
@@ -76,3 +89,22 @@ def test_decision_signal_api_spec_keeps_public_paths():
         "/api/v1/decision-signals/{signal_id}/feedback",
     ):
         assert token in api_spec
+
+
+def test_decision_signal_api_spec_lists_supported_market_filter():
+    api_spec = _read_api_spec()
+    list_parameters = api_spec["paths"]["/api/v1/decision-signals"]["get"]["parameters"]
+    latest_parameters = api_spec["paths"][
+        "/api/v1/decision-signals/latest/{stock_code}"
+    ]["get"]["parameters"]
+
+    market_descriptions = [
+        parameter["description"]
+        for parameter in [*list_parameters, *latest_parameters]
+        if parameter["name"] == "market"
+    ]
+
+    assert market_descriptions == [
+        "Optional market filter: cn/hk/us/jp/kr/tw",
+        "Optional market filter: cn/hk/us/jp/kr/tw",
+    ]

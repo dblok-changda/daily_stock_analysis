@@ -31,6 +31,16 @@ and `catalyst_summary`.
 
 ## Service And Storage
 
+| Field | Values |
+| --- | --- |
+| `market` | `cn`, `hk`, `us`, `jp`, `kr`, `tw` |
+| `source_type` | `analysis`, `agent`, `alert`, `market_review`, `manual` |
+| `market_phase` | `premarket`, `intraday`, `lunch_break`, `closing_auction`, `postmarket`, `non_trading`, `unknown` |
+| `action` | `buy`, `add`, `hold`, `reduce`, `sell`, `watch`, `avoid`, `alert` |
+| `horizon` | `intraday`, `1d`, `3d`, `5d`, `10d`, `swing`, `long` |
+| `plan_quality` | `complete`, `partial`, `minimal`, `unknown` |
+| `status` | `active`, `expired`, `invalidated`, `closed`, `archived` |
+
 `src/services/decision_signal_service.py` is the lifecycle entry point.
 `src/repositories/decision_signal_repo.py` owns DB access. Storage tables are
 defined in `src/storage.py`:

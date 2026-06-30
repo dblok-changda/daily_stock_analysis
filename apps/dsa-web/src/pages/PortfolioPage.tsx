@@ -1095,6 +1095,7 @@ const PortfolioPage: React.FC = () => {
               <option value="us">{text.marketUs}</option>
               <option value="jp">{text.marketJp}</option>
               <option value="kr">{text.marketKr}</option>
+              <option value="tw">{text.marketTw}</option>
             </select>
             <button type="submit" className="btn-secondary text-sm" disabled={accountCreating}>
               {accountCreating ? text.creatingAccount : text.createAccountBtn}
